@@ -1,0 +1,123 @@
+# Taxonomy Schema Specification
+# Defines the structure and validation rules for taxonomy.yaml
+
+schema_version: "1.0"
+
+description: |
+  This schema defines the structure of the taxonomy YAML file used by the
+  AI File Organizer classification engine. Each node in the taxonomy tree
+  represents a folder in the user's file system hierarchy.
+
+node_schema:
+  required_fields:
+    name:
+      type: string
+      description: "Human-readable folder name"
+      example: "Clients"
+
+    path:
+      type: string
+      description: "Absolute path within the taxonomy tree, starting with /"
+      example: "/Work/Clients"
+      constraints:
+        - "Must start with /"
+        - "Must be unique across the entire taxonomy"
+        - "Parent path must exist in the taxonomy (except root nodes)"
+
+    ai_context:
+      type: string
+      description: |
+        Natural language description of what files belong in this folder.
+        This is the HIGHEST-SIGNAL field for the AI classifier. Write it
+        as if explaining to a human assistant what goes here.
+      example: "Client-specific project files, deliverables, and correspondence"
+
+  optional_fields:
+    children:
+      type: "list[node]"
+      description: "Child folders in the taxonomy hierarchy"
+      default: []
+
+    rules:
+      type: "list[rule]"
+      description: |
+        Pattern-based classification hints. These are weighted suggestions,
+        NOT hard filters. The AI uses them as additional signals alongside
+        ai_context and file content analysis.
+      default: []
+
+    shortcut_target:
+      type: boolean
+      description: |
+        When true, this folder is a candidate for secondary_paths in the
+        classification output. Shortcut targets are commonly-used folders
+        that files might also logically belong to, enabling symlink or
+        alias-based organization.
+      default: false
+
+rule_schema:
+  required_fields:
+    pattern:
+      type: string
+      description: |
+        Regex pattern matched against file name, content snippet, and metadata.
+        Case-insensitive matching is applied.
+      example: "invoice|bill|receipt"
+
+    weight:
+      type: float
+      description: |
+        Signal strength from 0.0 to 1.0. Higher weight means the pattern
+        is a stronger indicator for this folder. Used as a hint by the AI,
+        not as a hard threshold.
+      constraints:
+        - "Must be between 0.0 and 1.0"
+      example: 0.85
+
+classification_output_schema:
+  description: |
+    The JSON structure returned by the classifier for each file.
+
+  fields:
+    suggested_path:
+      type: string
+      description: "Primary taxonomy path where the file should be placed"
+      example: "/Work/Clients/Acme"
+
+    secondary_paths:
+      type: "list[string]"
+      description: |
+        Additional paths where the file could logically belong.
+        Typically shortcut_target folders. Used for symlinks or aliases.
+      example: ["/Personal/Tax/2025"]
+
+    confidence:
+      type: float
+      description: |
+        Classification confidence from 0.0 to 1.0.
+        Below 0.70 triggers automatic escalation from Haiku to Sonnet.
+      constraints:
+        - "Must be between 0.0 and 1.0"
+
+    rationale:
+      type: string
+      description: "Brief explanation of why this classification was chosen"
+
+    alternatives:
+      type: "list[string]"
+      description: "Other plausible paths considered but not selected as primary"
+      example: ["/Work/Invoices"]
+
+    escalate:
+      type: boolean
+      description: |
+        Whether the model recommends escalation to a more capable model.
+        Set to true when confidence < 0.70.
+
+validation_rules:
+  - "All paths in the taxonomy must be unique"
+  - "All paths must form a valid tree (no orphan paths)"
+  - "Root-level nodes must have paths with exactly one segment (e.g., /Work)"
+  - "ai_context must be non-empty for all nodes"
+  - "Rule weights must be between 0.0 and 1.0"
+  - "Taxonomy must have at least one root node"

@@ -1,0 +1,171 @@
+# AI File Organizer — Taxonomy Configuration
+# This file defines the folder hierarchy and classification rules.
+# The classifier reads this on every call to determine where files belong.
+
+version: "1.0"
+description: "Personal file taxonomy for AI-powered classification"
+
+taxonomy:
+  - name: Work
+    path: /Work
+    ai_context: "Professional and work-related documents, projects, and communications"
+    children:
+      - name: Clients
+        path: /Work/Clients
+        ai_context: "Client-specific project files, deliverables, and correspondence"
+        rules:
+          - pattern: "invoice|proposal|contract|sow|statement.of.work"
+            weight: 0.8
+          - pattern: "client|customer|account"
+            weight: 0.6
+        children:
+          - name: Acme
+            path: /Work/Clients/Acme
+            ai_context: "Files related to the Acme client account"
+            shortcut_target: true
+            rules:
+              - pattern: "acme"
+                weight: 0.9
+          - name: Globex
+            path: /Work/Clients/Globex
+            ai_context: "Files related to the Globex client account"
+            shortcut_target: true
+            rules:
+              - pattern: "globex"
+                weight: 0.9
+      - name: Projects
+        path: /Work/Projects
+        ai_context: "Internal work projects and initiatives"
+        children:
+          - name: Active
+            path: /Work/Projects/Active
+            ai_context: "Currently active projects"
+          - name: Archive
+            path: /Work/Projects/Archive
+            ai_context: "Completed or paused projects"
+      - name: Invoices
+        path: /Work/Invoices
+        ai_context: "Sent and received invoices, billing documents"
+        shortcut_target: true
+        rules:
+          - pattern: "invoice|bill|receipt|payment"
+            weight: 0.85
+          - pattern: "\\d{4}-\\d{2}-\\d{2}.*invoice"
+            weight: 0.9
+      - name: Contracts
+        path: /Work/Contracts
+        ai_context: "Legal agreements, NDAs, service contracts"
+        rules:
+          - pattern: "contract|agreement|nda|terms"
+            weight: 0.85
+      - name: Admin
+        path: /Work/Admin
+        ai_context: "Administrative documents, HR, company policies"
+
+  - name: Personal
+    path: /Personal
+    ai_context: "Personal documents, finances, health, and life admin"
+    children:
+      - name: Finance
+        path: /Personal/Finance
+        ai_context: "Bank statements, budgets, financial planning"
+        children:
+          - name: Banking
+            path: /Personal/Finance/Banking
+            ai_context: "Bank statements and transaction records"
+            shortcut_target: true
+            rules:
+              - pattern: "statement|bank|transaction|balance"
+                weight: 0.8
+          - name: Investments
+            path: /Personal/Finance/Investments
+            ai_context: "Investment portfolios, stock/crypto records"
+            rules:
+              - pattern: "portfolio|stock|etf|crypto|dividend"
+                weight: 0.8
+      - name: Tax
+        path: /Personal/Tax
+        ai_context: "Tax returns, tax documents, deductions"
+        rules:
+          - pattern: "tax|w2|1099|deduction|irs|return"
+            weight: 0.9
+        children:
+          - name: "2024"
+            path: /Personal/Tax/2024
+            ai_context: "Tax documents for fiscal year 2024"
+            shortcut_target: true
+          - name: "2025"
+            path: /Personal/Tax/2025
+            ai_context: "Tax documents for fiscal year 2025"
+            shortcut_target: true
+      - name: Health
+        path: /Personal/Health
+        ai_context: "Medical records, insurance, prescriptions"
+        rules:
+          - pattern: "medical|health|doctor|prescription|insurance|claim"
+            weight: 0.8
+      - name: Identity
+        path: /Personal/Identity
+        ai_context: "Passport, ID, citizenship, vital records"
+        rules:
+          - pattern: "passport|license|birth.certificate|ssn|identity"
+            weight: 0.9
+      - name: Housing
+        path: /Personal/Housing
+        ai_context: "Lease, mortgage, utility bills, home documents"
+        rules:
+          - pattern: "lease|rent|mortgage|utility|electric|water|internet"
+            weight: 0.8
+
+  - name: Education
+    path: /Education
+    ai_context: "Learning materials, courses, certifications, notes"
+    children:
+      - name: Courses
+        path: /Education/Courses
+        ai_context: "Online courses, MOOCs, training materials"
+        rules:
+          - pattern: "course|lecture|lesson|module|curriculum"
+            weight: 0.7
+      - name: Certifications
+        path: /Education/Certifications
+        ai_context: "Professional certifications and credentials"
+        shortcut_target: true
+        rules:
+          - pattern: "certificate|certification|credential|badge"
+            weight: 0.85
+      - name: Notes
+        path: /Education/Notes
+        ai_context: "Study notes, summaries, reference materials"
+
+  - name: Creative
+    path: /Creative
+    ai_context: "Creative projects, writing, design, media"
+    children:
+      - name: Writing
+        path: /Creative/Writing
+        ai_context: "Blog posts, essays, drafts, manuscripts"
+        rules:
+          - pattern: "draft|essay|blog|article|manuscript"
+            weight: 0.7
+      - name: Design
+        path: /Creative/Design
+        ai_context: "Graphic design files, mockups, brand assets"
+        rules:
+          - pattern: "design|mockup|wireframe|logo|brand"
+            weight: 0.7
+      - name: Photos
+        path: /Creative/Photos
+        ai_context: "Curated or project-related photos"
+
+  - name: Archive
+    path: /Archive
+    ai_context: "Old files to keep but not actively use. Last resort classification."
+    rules:
+      - pattern: "old|archive|backup|deprecated"
+        weight: 0.5
+
+  - name: Inbox
+    path: /Inbox
+    ai_context: "Unsorted files awaiting classification. Use only when no other category fits."
+    rules: []

@@ -1,11 +1,36 @@
+# AI File Organizer
 
-# 💻 Tech Stack:
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) ![R](https://img.shields.io/badge/r-%23276DC3.svg?style=for-the-badge&logo=r&logoColor=white) ![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white) ![MicrosoftSQLServer](https://img.shields.io/badge/Microsoft%20SQL%20Sever-CC2927?style=for-the-badge&logo=microsoft%20sql%20server&logoColor=white) ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white) ![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white) ![Plotly](https://img.shields.io/badge/Plotly-%233F4F75.svg?style=for-the-badge&logo=plotly&logoColor=white) ![scikit-learn](https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white) ![SciPy](https://img.shields.io/badge/SciPy-%230C55A5.svg?style=for-the-badge&logo=scipy&logoColor=%white) ![GIT](https://img.shields.io/badge/Git-fc6d26?style=for-the-badge&logo=git&logoColor=white)
-# 📊 GitHub Stats:
-![](https://github-readme-streak-stats.herokuapp.com/?user=egimat&theme=dark&hide_border=false)<br/>
-![](https://github-readme-stats.vercel.app/api/top-langs/?username=egimat&theme=dark&hide_border=false&include_all_commits=true&count_private=true&layout=compact)
+AI-powered local-first file organizer that classifies files into a user-defined taxonomy using the Claude API.
 
-### ✍️ Random Dev Quote
-![](https://quotes-github-readme.vercel.app/api?type=horizontal&theme=radical)
+## Status
 
-<!-- Proudly created with GPRM ( https://gprm.itsvg.in ) -->
+Design phase complete. Classification engine in progress.
+
+## How It Works
+
+1. Point the classifier at any file on your local machine
+2. It extracts metadata (name, extension, size, dates, MIME type) and a text snippet (first 200 words)
+3. Sends the file info + your full taxonomy to Claude API
+4. Returns a structured classification with suggested folder path, confidence score, and rationale
+5. Low-confidence results automatically escalate from Haiku to Sonnet for better accuracy
+
+## Quick Start
+
+```bash
+cd _System/AI-File-Organizer/classifier
+pip install -r requirements.txt
+export ANTHROPIC_API_KEY=your-key-here
+python classifier.py --file /path/to/file.pdf --taxonomy ../taxonomy/taxonomy.yaml
+```
+
+## Project Structure
+
+```
+_System/AI-File-Organizer/
+  taxonomy/        # Taxonomy YAML config
+  docs/            # Specs and schema docs
+  classifier/      # Classification engine
+  action-log/      # Classification action logs
+```
+
+Private project by Matteo.
