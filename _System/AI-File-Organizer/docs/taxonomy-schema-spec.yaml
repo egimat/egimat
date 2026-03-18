@@ -1,0 +1,116 @@
+# ============================================================
+# TAXONOMY YAML — SCHEMA SPECIFICATION v1.0
+# AI-Powered Personal File Organizer
+# ============================================================
+# This file defines every supported field in taxonomy.yaml.
+# Fields marked [REQUIRED] must be present. All others are optional.
+# ============================================================
+
+taxonomy:
+
+  # --- Top-level metadata ---
+  version: string            # [REQUIRED] Schema version. Format: "major.minor" (e.g. "1.0").
+  owner: string              # [REQUIRED] Display name of the taxonomy owner.
+  context: string            # [REQUIRED] One of: "personal", "work", "both".
+
+  # --- Folder tree ---
+  root_folders:              # [REQUIRED] List of top-level folder nodes.
+    - # === FOLDER NODE SCHEMA ===
+      id: string             # [AUTO-GENERATED] 8-char hex identifier. Immutable after creation.
+                             # Used by action log, undo system, and schema migrations.
+                             # Never visible in filesystem. Never renamed.
+      name: string           # [REQUIRED] Human-readable folder name (matches filesystem).
+      path: string           # [REQUIRED] Full path from Drive root (e.g. "/Work/Clients").
+                             # Updated automatically if user renames folder. id stays fixed.
+      description: string    # What belongs here. Free text. Fed to AI as classification signal.
+      pattern: string        # Structural pattern (e.g. "per-client", "per-year", "per-project").
+      children_pattern: string  # Template for auto-generated child folders (e.g. "{client_name}").
+      sensitivity: string    # "high" prevents auto-moves. Used for health, legal, financial.
+      automation_override: string  # Overrides global_settings.automation_mode for this folder.
+                                   # One of: "suggest_only", "suggest_and_confirm", "auto_pilot".
+      shortcut_target: bool  # If true, AI considers this folder for secondary_paths (shortcuts).
+                             # Default: false. Mark folders like Tax/, Reference/, Archive/.
+      rules:                 # Classification hint rules. AI uses these as weighted signals,
+                             # not hard filters. A file can still land here without matching any rule.
+        - # === RULE BLOCK SCHEMA ===
+          # Within a block: conditions are AND (all must match).
+          # Across blocks: OR (any block matching is sufficient).
+          keyword_match: list[string]   # File content or name contains any of these keywords.
+          file_types: list[string]      # File extension matches any of these (e.g. [".pdf", ".jpg"]).
+      subfolders: list[folder_node]     # Nested folder nodes. Same schema recursively.
+
+  # --- Global settings ---
+  global_settings:
+    automation_mode: string  # [REQUIRED] Default mode. One of:
+                             #   "suggest_only" — nothing moves without explicit approval.
+                             #   "suggest_and_confirm" — system messages user, approve with one tap.
+                             #   "auto_pilot" — automatic for trusted categories, deferred execution.
+    unsorted_folder: string  # [REQUIRED] Path to Inbox (default: "/Inbox").
+    snippet_max_words: int   # Max words extracted from file for AI classification (default: 200).
+
+  # --- AI context ---
+  ai_context: string         # [REQUIRED] Free-text description of user habits, search behaviour,
+                             # language mix, archiving patterns. Highest-leverage field in the schema.
+                             # AI-drafted during onboarding, user-editable anytime.
+                             # AI may propose amendments based on observed patterns (never overwrites).
+
+# ============================================================
+# CLASSIFICATION ENGINE OUTPUT SPEC
+# ============================================================
+# The classification engine reads taxonomy.yaml and produces:
+#
+#   suggested_path: string        e.g. "/Work/Clients/Acme"
+#   secondary_paths: list[string] e.g. ["/Personal/Tax/2025"]  (optional, usually empty)
+#   confidence: float             0.0 – 1.0
+#   rationale: string             1–2 sentences
+#   alternatives: list[string]    up to 2 other plausible paths
+#   escalate: bool                true if confidence < 0.70 → use Sonnet
+#
+# secondary_paths: shortcut targets. Only populated when cross-domain
+# relevance is clear. AI draws candidates from folders with shortcut_target: true.
+# A file has exactly ONE canonical path and zero or more shortcut paths.
+# ============================================================
+
+# ============================================================
+# FILE METADATA RECORD (SQLite, not in YAML)
+# ============================================================
+# Each processed file gets a record in the local SQLite database:
+#
+#   file_id: string               auto-generated UUID
+#   content_hash: string           SHA-256 of file binary content (dedup key)
+#   original_name: string          filename at time of ingestion
+#   canonical_path: string         where the file lives
+#   shortcut_paths: list[string]   where shortcuts were created
+#   classification_date: datetime
+#   confidence: float
+#   model_used: string             "haiku" or "sonnet"
+#   user_action: string            "accepted", "modified", "skipped"
+#   taxonomy_version: string       schema version at time of classification
+# ============================================================
+
+# ============================================================
+# RULE EVALUATION LOGIC
+# ============================================================
+# Rules are HINTS, not filters. The AI weighs them alongside folder name,
+# description, ai_context, and file metadata.
+#
+# Within a single rule block:
+#   keyword_match AND file_types must BOTH match (AND logic).
+#   Within keyword_match list: any keyword is sufficient (OR).
+#   Within file_types list: any extension is sufficient (OR).
+#
+# Across multiple rule blocks on the same folder:
+#   ANY block matching is sufficient (OR logic).
+#
+# Example:
+#   rules:
+#     - keyword_match: [invoice, payment]    # Block 1
+#       file_types: [.pdf]
+#     - keyword_match: [receipt]             # Block 2
+#       file_types: [.pdf, .jpg]
+#
+#   A .pdf with "payment" → matches Block 1 → folder is a candidate.
+#   A .jpg with "receipt" → matches Block 2 → folder is a candidate.
+#   A .docx with "invoice" → fails file_types in Block 1, no match in Block 2 → rules don't fire.
+#   But AI may still classify the .docx here if other signals are strong enough.
+# ============================================================

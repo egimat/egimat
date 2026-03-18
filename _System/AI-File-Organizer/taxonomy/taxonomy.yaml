@@ -1,0 +1,138 @@
+taxonomy:
+  version: "1.0"
+  owner: "Matteo"
+  context: "both"
+
+  root_folders:
+    - id: "a3f7b2c1"
+      name: "Work"
+      path: "/Work"
+      description: "All professional and freelance work."
+      subfolders:
+        - id: "b1c4e8d2"
+          name: "Clients"
+          path: "/Work/Clients"
+          description: "One subfolder per client. Active and past."
+          pattern: "per-client"
+          children_pattern: "{client_name}"
+
+        - id: "c2d5f9e3"
+          name: "Invoices"
+          path: "/Work/Invoices"
+          description: "Issued invoices and payment confirmations."
+          automation_override: "suggest_and_confirm"
+          shortcut_target: true
+          rules:
+            - keyword_match: [invoice, fattura, payment confirmation]
+              file_types: [.pdf]
+
+        - id: "d3e6a0f4"
+          name: "Contracts"
+          path: "/Work/Contracts"
+          description: "Signed agreements, NDAs, terms of engagement."
+          sensitivity: "high"
+          rules:
+            - keyword_match: [contract, agreement, NDA, terms]
+              file_types: [.pdf, .docx]
+
+        - id: "e4f7b1a5"
+          name: "Payslips"
+          path: "/Work/Payslips"
+          description: "Monthly salary slips and compensation statements."
+          pattern: "per-year"
+          children_pattern: "{year}"
+          shortcut_target: true
+          rules:
+            - keyword_match: [payslip, salary, cedolino, busta paga]
+              file_types: [.pdf]
+
+    - id: "f5a8c2b6"
+      name: "Personal"
+      path: "/Personal"
+      subfolders:
+        - id: "a6b9d3c7"
+          name: "Health"
+          path: "/Personal/Health"
+          description: "Medical records, prescriptions, test results."
+          sensitivity: "high"
+          rules:
+            - keyword_match: [medical, prescription, blood test, diagnosis, referral]
+              file_types: [.pdf]
+
+        - id: "b7c0e4d8"
+          name: "Tax"
+          path: "/Personal/Tax"
+          description: "Tax returns, deductions, fiscal documents. Organised by year."
+          pattern: "per-year"
+          children_pattern: "{year}"
+          shortcut_target: true
+          rules:
+            - keyword_match: [tax, 730, CU, dichiarazione, deduction, fiscal]
+              file_types: [.pdf]
+
+        - id: "c8d1f5e9"
+          name: "Housing"
+          path: "/Personal/Housing"
+          description: "Lease agreements, utility bills, property documents."
+          rules:
+            - keyword_match: [lease, rent, utility, electricity, gas, water]
+              file_types: [.pdf]
+
+        - id: "d9e2a6f0"
+          name: "Identity"
+          path: "/Personal/Identity"
+          description: "Passport, ID card, residence permits, visa documents."
+          sensitivity: "high"
+
+    - id: "e0f3b7a1"
+      name: "Finance"
+      path: "/Finance"
+      description: "Bank statements, investments, insurance policies."
+      sensitivity: "high"
+      shortcut_target: true
+      subfolders:
+        - id: "f1a4c8b2"
+          name: "Bank Statements"
+          path: "/Finance/Bank Statements"
+          pattern: "per-year"
+          children_pattern: "{year}"
+          rules:
+            - keyword_match: [statement, estratto conto, bank]
+              file_types: [.pdf]
+
+        - id: "a2b5d9c3"
+          name: "Insurance"
+          path: "/Finance/Insurance"
+          rules:
+            - keyword_match: [insurance, policy, assicurazione, polizza]
+              file_types: [.pdf]
+
+    - id: "b3c6e0d4"
+      name: "Learning"
+      path: "/Learning"
+      description: "Courses, certifications, reading notes, saved articles."
+      subfolders:
+        - id: "c4d7f1e5"
+          name: "Certifications"
+          path: "/Learning/Certifications"
+          rules:
+            - keyword_match: [certificate, certification, diploma, credential]
+              file_types: [.pdf]
+
+  global_settings:
+    automation_mode: "suggest_only"
+    unsorted_folder: "/Inbox"
+    snippet_max_words: 200
+
+  ai_context: |
+    Matteo is a strategic finance professional who has worked across
+    multinationals (Heineken, Amazon) and as a freelance consultant.
+    He searches by client name or project name, never by date.
+    He organises quarterly, not in real time.
+    Documents are mixed Italian and English throughout — both languages
+    appear in every folder. Italian fiscal keywords (730, CU, cedolino,
+    fattura) are common.
+    He values fast retrieval over tidy aesthetics. If a file could
+    logically sit in two places, the canonical location should be
+    the more specific folder, with a shortcut in the broader one.
+    He rarely deletes anything — old files go to Archive, not trash.
