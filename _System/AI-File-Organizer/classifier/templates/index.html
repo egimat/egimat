@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI File Organizer</title>
+</head>
+<body>
+    <h1>AI File Organizer — Dashboard</h1>
+    <div id="stats"></div>
+    <div id="pending"></div>
+    <script>
+        async function loadStats() {
+            const r = await fetch('/api/stats');
+            const s = await r.json();
+            document.getElementById('stats').innerHTML =
+                `<p>Pending: ${s.pending} | Moved: ${s.moved} | Skipped: ${s.skipped} | Scheduled: ${s.scheduled} | Trust: ${(s.trust_level * 100).toFixed(0)}%</p>`;
+        }
+        async function loadPending() {
+            const r = await fetch('/api/pending');
+            const files = await r.json();
+            const html = files.map(f => `
+                <div style="border:1px solid #ccc;padding:8px;margin:4px 0">
+                    <strong>${f.original_name}</strong> → ${f.suggested_path}/${f.suggested_name}<br>
+                    Confidence: ${(f.confidence * 100).toFixed(0)}% | ${f.rationale}<br>
+                    <button onclick="approve('${f.id}')">Approve</button>
+                    <button onclick="tonight('${f.id}')">Tonight</button>
+                    <button onclick="skip('${f.id}')">Skip</button>
+                </div>
+            `).join('');
+            document.getElementById('pending').innerHTML = html || '<p>No pending files.</p>';
+        }
+        async function approve(id) {
+            await fetch(`/api/approve/${id}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({rename_mode:'accept'})});
+            loadPending(); loadStats();
+        }
+        async function tonight(id) {
+            await fetch(`/api/tonight/${id}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({rename_mode:'accept'})});
+            loadPending(); loadStats();
+        }
+        async function skip(id) {
+            const reason = prompt('Reason for skipping?') || '';
+            await fetch(`/api/skip/${id}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({reason})});
+            loadPending(); loadStats();
+        }
+        loadStats(); loadPending();
+        setInterval(() => { loadStats(); loadPending(); }, 5000);
+    </script>
+</body>
+</html>
